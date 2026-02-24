@@ -22,6 +22,12 @@ const Map<String, String> actionMessages = {
   'MSG_JOIN_SENT_SUCCESS':
       'Join meeting request sent successfully, listen onMeetingStatusChanged for further action.',
   'MSG_JOIN_SENT_FAILED': 'Join meeting request failed to send.',
+
+  // Start Zoom Meeting
+  'MSG_NO_ZAK_TOKEN_PROVIDED': 'No ZAK token provided.',
+  'MSG_START_SENT_SUCCESS':
+      'Start meeting request sent successfully, listen onMeetingStatusChanged for further action.',
+  'MSG_START_SENT_FAILED': 'Start meeting request failed to send.',
 };
 
 String getActionMessage(String code) {

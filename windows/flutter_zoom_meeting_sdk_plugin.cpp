@@ -115,6 +115,17 @@ namespace flutter_zoom_meeting_sdk
       ZoomResponse response = JoinMeeting(meetingNumber, password, displayName, webinarToken);
       result->Success(flutter::EncodableValue(response.ToEncodableMap()));
     }
+    else if (methodName.compare("startMeeting") == 0)
+    {
+      ArgReader reader(method_call);
+
+      auto meetingNumber = reader.GetUINT64("meetingNumber").value_or(0);
+      auto displayName = reader.GetWString("displayName").value_or(L"Zoom User");
+      auto zakToken = reader.GetWString("zakToken");
+
+      ZoomResponse response = StartMeeting(meetingNumber, displayName, zakToken);
+      result->Success(flutter::EncodableValue(response.ToEncodableMap()));
+    }
     else if (methodName.compare("unInitZoom") == 0)
     {
       ZoomResponse response = UnInitZoom();
@@ -291,6 +302,82 @@ namespace flutter_zoom_meeting_sdk
         .Message("MSG_JOIN_SENT_FAILED")
         .Param("statusCode", static_cast<int>(joinResult))
         .Param("statusLabel", EnumToString(joinResult))
+        .Build();
+  }
+
+  ZoomResponse StartMeeting(uint64_t meetingNumber, std::wstring displayName, std::optional<std::wstring> zakToken)
+  {
+    std::string tag = "startMeeting";
+
+    if (!sdkInitialized)
+    {
+      return ZoomResponseBuilder(tag)
+          .Success(false)
+          .Message("MSG_NO_YET_INITIALIZED")
+          .Build();
+    }
+
+    if (!zakToken.has_value() || zakToken.value().empty())
+    {
+      return ZoomResponseBuilder(tag)
+          .Success(false)
+          .Message("MSG_NO_ZAK_TOKEN_PROVIDED")
+          .Build();
+    }
+
+    ZOOM_SDK_NAMESPACE::IMeetingService *meetingService;
+    ZOOM_SDK_NAMESPACE::SDKError meetingServiceInitReturnVal = ZOOM_SDK_NAMESPACE::CreateMeetingService(&meetingService);
+
+    if (meetingServiceInitReturnVal != ZOOM_SDK_NAMESPACE::SDKError::SDKERR_SUCCESS)
+    {
+      return ZoomResponseBuilder(tag)
+          .Success(false)
+          .Message("MSG_MEETING_SERVICE_NOT_AVAILABLE")
+          .Param("statusCode", static_cast<int>(meetingServiceInitReturnVal))
+          .Param("statusLabel", EnumToString(meetingServiceInitReturnVal))
+          .Build();
+    }
+
+    ZOOM_SDK_NAMESPACE::StartParam startParam;
+    startParam.userType = ZOOM_SDK_NAMESPACE::SDK_UT_WITHOUT_LOGIN;
+    auto &withoutLoginParam = startParam.param.withoutloginStart;
+    withoutLoginParam.meetingNumber = meetingNumber;
+    withoutLoginParam.userName = displayName.c_str();
+
+    std::wstring zakStr = zakToken.value();
+    withoutLoginParam.zak = zakStr.c_str();
+    withoutLoginParam.isVideoOff = false;
+    withoutLoginParam.isAudioOff = false;
+
+    auto handler = ZoomEventManager::GetInstance().GetEventHandler();
+    if (!handler)
+    {
+      return ZoomResponseBuilder(tag)
+          .Success(false)
+          .Message("MSG_ZOOM_EVENT_MANAGER_HANDLER_NOT_AVAILABLE")
+          .Build();
+    }
+
+    meetingListener = std::make_unique<ZoomSDKEventListenerMeetingService>();
+    meetingListener->SetEventHandler(handler);
+    meetingService->SetEvent(meetingListener.get());
+
+    auto startResult = meetingService->Start(startParam);
+    if (startResult == ZOOM_SDK_NAMESPACE::SDKError::SDKERR_SUCCESS)
+    {
+      return ZoomResponseBuilder(tag)
+          .Success(true)
+          .Message("MSG_START_SENT_SUCCESS")
+          .Param("statusCode", static_cast<int>(startResult))
+          .Param("statusLabel", EnumToString(startResult))
+          .Build();
+    }
+
+    return ZoomResponseBuilder(tag)
+        .Success(false)
+        .Message("MSG_START_SENT_FAILED")
+        .Param("statusCode", static_cast<int>(startResult))
+        .Param("statusLabel", EnumToString(startResult))
         .Build();
   }
 

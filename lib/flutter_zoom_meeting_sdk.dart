@@ -72,6 +72,13 @@ class FlutterZoomMeetingSdk {
     return FlutterZoomMeetingSdkPlatform.instance.joinMeeting(request);
   }
 
+  /// Start a meeting as a host using a ZAK token
+  Future<FlutterZoomMeetingSdkActionResponse<StartParamsResponse>> startMeeting(
+    ZoomMeetingSdkRequest request,
+  ) {
+    return FlutterZoomMeetingSdkPlatform.instance.startMeeting(request);
+  }
+
   /// Uninitialize the SDK
   Future<FlutterZoomMeetingSdkActionResponse> unInitZoom() {
     return FlutterZoomMeetingSdkPlatform.instance.unInitZoom();

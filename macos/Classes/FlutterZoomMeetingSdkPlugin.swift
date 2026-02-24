@@ -173,13 +173,15 @@ public class FlutterZoomMeetingSdkPlugin: NSObject, FlutterPlugin {
             joinParam.webinarToken =
                 (args["webinarToken"]?.isEmpty ?? true)
                 ? nil : args["webinarToken"]
+            joinParam.zak =
+                (args["zakToken"]?.isEmpty ?? true)
+                ? nil : args["zakToken"]
             joinParam.customerKey = nil
             joinParam.isDirectShare = false
             joinParam.displayID = 0
             joinParam.isNoVideo = false
             joinParam.isNoAudio = false
             joinParam.vanityID = nil
-            joinParam.zak = nil
 
             let joinResult = meetingService.joinMeeting(joinParam)
 
@@ -193,6 +195,81 @@ public class FlutterZoomMeetingSdkPlugin: NSObject, FlutterPlugin {
                     params: [
                         "statusCode": joinResult.rawValue,
                         "statusLabel": joinResult.name,
+                    ]
+                )
+            )
+
+        case "startMeeting":
+            if isInitialized == false {
+                result(
+                    makeActionResponse(
+                        action: action,
+                        isSuccess: false,
+                        message: "MSG_NO_YET_INITIALIZED",
+                    )
+                )
+                return
+            }
+
+            guard let args = call.arguments as? [String: String] else {
+                result(
+                    makeActionResponse(
+                        action: action,
+                        isSuccess: false,
+                        message: "MSG_NO_ARGS_PROVIDED",
+                    )
+                )
+                return
+            }
+
+            guard let zakToken = args["zakToken"], !zakToken.isEmpty else {
+                result(
+                    makeActionResponse(
+                        action: action,
+                        isSuccess: false,
+                        message: "MSG_NO_ZAK_TOKEN_PROVIDED",
+                    )
+                )
+                return
+            }
+
+            guard let meetingService = ZoomSDK.shared().getMeetingService()
+            else {
+                result(
+                    makeActionResponse(
+                        action: action,
+                        isSuccess: false,
+                        message: "MSG_MEETING_SERVICE_NOT_AVAILABLE",
+                    )
+                )
+                return
+            }
+
+            meetingService.delegate = self
+
+            let startParam = ZoomSDKStartMeetingElements()
+            startParam.meetingNumber = Int64(args["meetingNumber"] ?? "") ?? 0
+            startParam.displayName = args["displayName"]
+            startParam.zak = zakToken
+            startParam.userType = ZoomSDKUserType_WithoutLogin
+            startParam.isNoVideo = false
+            startParam.isNoAudio = false
+            startParam.isDirectShare = false
+            startParam.displayID = 0
+            startParam.vanityID = nil
+
+            let startResult = meetingService.startMeeting(startParam)
+
+            result(
+                makeActionResponse(
+                    action: action,
+                    isSuccess: startResult == ZoomSDKError_Success,
+                    message: startResult == ZoomSDKError_Success
+                        ? "MSG_START_SENT_SUCCESS"
+                        : "MSG_START_SENT_FAILED",
+                    params: [
+                        "statusCode": startResult.rawValue,
+                        "statusLabel": startResult.name,
                     ]
                 )
             )

@@ -139,11 +139,29 @@ class MethodChannelFlutterZoomMeetingSdk extends FlutterZoomMeetingSdkPlatform {
       'password': request.password,
       'displayName': request.displayName,
       'webinarToken': request.webinarToken ?? "",
+      'zakToken': request.zakToken ?? "",
     });
     final Map<String, dynamic> resultMap = Map<String, dynamic>.from(result);
     return FlutterZoomMeetingSdkActionResponse.fromMap(
       resultMap,
       JoinParamsResponse.fromMap,
+    );
+  }
+
+  @override
+  Future<FlutterZoomMeetingSdkActionResponse<StartParamsResponse>> startMeeting(
+    ZoomMeetingSdkRequest request,
+  ) async {
+    final result = await methodChannel.invokeMethod('startMeeting', {
+      'meetingNumber': request.meetingNumber,
+      'password': request.password,
+      'displayName': request.displayName,
+      'zakToken': request.zakToken ?? "",
+    });
+    final Map<String, dynamic> resultMap = Map<String, dynamic>.from(result);
+    return FlutterZoomMeetingSdkActionResponse.fromMap(
+      resultMap,
+      StartParamsResponse.fromMap,
     );
   }
 

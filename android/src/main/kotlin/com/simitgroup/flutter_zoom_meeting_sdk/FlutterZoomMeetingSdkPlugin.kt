@@ -76,6 +76,11 @@ class FlutterZoomMeetingSdkPlugin : FlutterPlugin, MethodCallHandler {
 
                 result.success(response.toMap())
             }
+            (action == "startMeeting") -> {
+                val response = startZoomMeeting(call)
+
+                result.success(response.toMap())
+            }
             (action == "unInitZoom") -> {
                 val response = unInitZoom()
 
@@ -193,6 +198,75 @@ class FlutterZoomMeetingSdkPlugin : FlutterPlugin, MethodCallHandler {
             params = mapOf(
                 "statusCode" to joinResult,
                 "statusLabel" to MapperMeetingError.getErrorName(joinResult),
+            )
+        )
+        
+        return response;
+    }
+
+    private fun startZoomMeeting(call: MethodCall) : StandardZoomResponse{
+        val action = "startMeeting"
+
+        if(!ZoomSDK.getInstance().isInitialized)
+        {
+            val response = StandardZoomResponse(
+                isSuccess = false,
+                message = "MSG_NO_YET_INITIALIZED",
+                action = action,
+            )
+
+            return response;
+        }
+
+        val arguments = call.arguments<Map<String, String>>() ?: emptyMap<String, String>()
+        if(arguments.isEmpty())
+        {
+            return StandardZoomResponse(
+                isSuccess = false,
+                message = "MSG_NO_ARGS_PROVIDED",
+                action = action
+            )
+        }
+
+        val zakToken = arguments["zakToken"]
+        if (zakToken.isNullOrEmpty()) {
+            return StandardZoomResponse(
+                isSuccess = false,
+                message = "MSG_NO_ZAK_TOKEN_PROVIDED",
+                action = action
+            )
+        }
+
+        val meetingNumber = arguments["meetingNumber"]
+        val displayName = arguments["displayName"]
+
+        val meetingService = ZoomSDK.getInstance().meetingService
+            ?: return StandardZoomResponse(
+                isSuccess = false,
+                message = "MSG_MEETING_SERVICE_NOT_AVAILABLE",
+                action = action
+            )
+
+        meetingService.addListener(FlutterZoomEventListenerMeeting(eventSink))
+
+        val opts = StartMeetingOptions()
+        opts.no_video = false
+        opts.no_audio = false
+
+        val params = StartMeetingParams()
+        params.meetingNo = meetingNumber
+        params.displayName = displayName
+        params.zak = zakToken
+
+        val startResult = meetingService.startMeetingWithParams(context, params, opts)
+
+        val response = StandardZoomResponse(
+            isSuccess = startResult == MeetingError.MEETING_ERROR_SUCCESS,
+            message = if (startResult == MeetingError.MEETING_ERROR_SUCCESS) "MSG_START_SENT_SUCCESS" else "MSG_START_SENT_FAILED",
+            action = action,
+            params = mapOf(
+                "statusCode" to startResult,
+                "statusLabel" to MapperMeetingError.getErrorName(startResult),
             )
         )
         

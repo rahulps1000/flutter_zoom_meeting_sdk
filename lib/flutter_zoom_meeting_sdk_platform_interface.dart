@@ -79,6 +79,12 @@ abstract class FlutterZoomMeetingSdkPlatform extends PlatformInterface {
     throw UnimplementedError('joinMeeting() has not been implemented.');
   }
 
+  Future<FlutterZoomMeetingSdkActionResponse<StartParamsResponse>> startMeeting(
+    ZoomMeetingSdkRequest request,
+  ) {
+    throw UnimplementedError('startMeeting() has not been implemented.');
+  }
+
   Future<JwtResponse?> getJWTToken({
     required String authEndpoint,
     required String meetingNumber,

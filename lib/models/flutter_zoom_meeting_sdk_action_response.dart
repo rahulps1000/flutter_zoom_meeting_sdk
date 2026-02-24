@@ -133,3 +133,28 @@ class JoinParamsResponse implements MappableParams {
     return {'statusCode': statusCode, 'statusLabel': statusLabel};
   }
 }
+
+/// Action response params for [ActionType.startMeeting]
+class StartParamsResponse implements MappableParams {
+  /// The status code of the action.
+  /// This value returned directly from the Zoom Meeting SDK and represent enum values defined per platform.
+  /// These enum values are not guaranteed to be consistent across platforms, so prefer using statusLabel.
+  final int statusCode;
+
+  /// The status label of the action
+  final String statusLabel;
+
+  StartParamsResponse({required this.statusCode, required this.statusLabel});
+
+  factory StartParamsResponse.fromMap(Map<String, dynamic> map) {
+    return StartParamsResponse(
+      statusCode: map['statusCode'],
+      statusLabel: map['statusLabel'] as String,
+    );
+  }
+
+  @override
+  Map<String, dynamic> toMap() {
+    return {'statusCode': statusCode, 'statusLabel': statusLabel};
+  }
+}
