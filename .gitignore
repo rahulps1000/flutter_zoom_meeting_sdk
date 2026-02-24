@@ -36,3 +36,4 @@ resign_zoom_sdk.sh
 /example/ZoomSDK
 /example/macos/Runner/Zoom
 /android/libs
+_codeql_detected_source_root
