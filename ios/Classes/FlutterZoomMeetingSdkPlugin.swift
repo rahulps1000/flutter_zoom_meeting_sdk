@@ -181,6 +181,7 @@ public class FlutterZoomMeetingSdkPlugin: NSObject, FlutterPlugin {
                 startMeetingParameters.userName = args["displayName"]
                 startMeetingParameters.zak = zakToken
                 startMeetingParameters.noVideo = false
+                startMeetingParameters.noAudio = false
 
                 let startResult = meetingService.startMeeting(
                     with: startMeetingParameters
