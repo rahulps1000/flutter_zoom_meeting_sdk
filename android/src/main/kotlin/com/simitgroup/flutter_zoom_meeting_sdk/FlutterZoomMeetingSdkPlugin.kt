@@ -164,6 +164,7 @@ class FlutterZoomMeetingSdkPlugin : FlutterPlugin, MethodCallHandler {
         val password = arguments["password"]
         val displayName = arguments["displayName"]
         val webinarToken = arguments["webinarToken"]
+        val zakToken = arguments["zakToken"]
 
         val meetingService = ZoomSDK.getInstance().meetingService
             ?: return StandardZoomResponse(
@@ -173,6 +174,30 @@ class FlutterZoomMeetingSdkPlugin : FlutterPlugin, MethodCallHandler {
             )
 
         meetingService.addListener(FlutterZoomEventListenerMeeting(eventSink))
+
+        if (!zakToken.isNullOrEmpty()) {
+            val startOpts = StartMeetingOptions()
+            startOpts.no_video = false
+
+            val startParams = StartMeetingParams()
+            startParams.meetingNo = meetingNumber
+            startParams.displayName = displayName
+            startParams.zoomAccessToken = zakToken
+
+            val startResult = meetingService.startMeetingWithParams(context, startParams, startOpts)
+
+            val response = StandardZoomResponse(
+                isSuccess = startResult == MeetingError.MEETING_ERROR_SUCCESS,
+                message = if (startResult == MeetingError.MEETING_ERROR_SUCCESS) "MSG_JOIN_SENT_SUCCESS" else "MSG_JOIN_SENT_FAILED",
+                action = action,
+                params = mapOf(
+                    "statusCode" to startResult,
+                    "statusLabel" to MapperMeetingError.getErrorName(startResult),
+                )
+            )
+
+            return response;
+        }
 
         val opts = JoinMeetingOptions()
         opts.no_video = false

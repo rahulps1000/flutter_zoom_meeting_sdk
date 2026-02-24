@@ -12,11 +12,17 @@ class ZoomMeetingSdkRequest {
   /// Optional. The webinar token for the meeting, required for webinar & registered meetings
   final String? webinarToken;
 
+  /// Optional. The ZAK (Zoom Access Key) token for authenticating as a Zoom user (host).
+  /// When provided, the meeting will be started as the host using the ZAK token
+  /// instead of joining as a participant.
+  final String? zakToken;
+
   ZoomMeetingSdkRequest({
     required this.meetingNumber,
     required this.password,
     required this.displayName,
     this.webinarToken,
+    this.zakToken,
   });
 
   // Factory method to create the object from a Map
@@ -26,6 +32,7 @@ class ZoomMeetingSdkRequest {
       password: map['password'] ?? '',
       displayName: map['displayName'] ?? '',
       webinarToken: map['webinarToken'],
+      zakToken: map['zakToken'],
     );
   }
 
@@ -36,6 +43,7 @@ class ZoomMeetingSdkRequest {
       'password': password,
       'displayName': displayName,
       'webinarToken': webinarToken,
+      'zakToken': zakToken,
     };
   }
 }

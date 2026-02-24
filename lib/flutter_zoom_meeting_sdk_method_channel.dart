@@ -139,6 +139,7 @@ class MethodChannelFlutterZoomMeetingSdk extends FlutterZoomMeetingSdkPlatform {
       'password': request.password,
       'displayName': request.displayName,
       'webinarToken': request.webinarToken ?? "",
+      'zakToken': request.zakToken ?? "",
     });
     final Map<String, dynamic> resultMap = Map<String, dynamic>.from(result);
     return FlutterZoomMeetingSdkActionResponse.fromMap(

@@ -171,34 +171,64 @@ public class FlutterZoomMeetingSdkPlugin: NSObject, FlutterPlugin {
 
             meetingService.delegate = self
 
-            let joinMeetingParameters = MobileRTCMeetingJoinParam()
+            let zakToken = args["zakToken"]
+            let hasZakToken = !(zakToken?.isEmpty ?? true)
 
-            joinMeetingParameters.meetingNumber = args["meetingNumber"]
-            joinMeetingParameters.password = args["password"]
-            joinMeetingParameters.userName = args["displayName"]
-            joinMeetingParameters.webinarToken =
-                (args["webinarToken"]?.isEmpty ?? true)
-                ? nil : args["webinarToken"]
-            joinMeetingParameters.noVideo = false
-            joinMeetingParameters.noAudio = false
+            if hasZakToken {
+                let startMeetingParameters = MobileRTCMeetingStartParam4WithoutLogin()
 
-            let joinResult = meetingService.joinMeeting(
-                with: joinMeetingParameters
-            )
+                startMeetingParameters.meetingNumber = args["meetingNumber"]
+                startMeetingParameters.userName = args["displayName"]
+                startMeetingParameters.zak = zakToken
+                startMeetingParameters.noVideo = false
 
-            result(
-                makeActionResponse(
-                    action: action,
-                    isSuccess: joinResult == .success,
-                    message: joinResult == .success
-                        ? "MSG_JOIN_SENT_SUCCESS"
-                        : "MSG_JOIN_SENT_FAILED",
-                    params: [
-                        "statusCode": joinResult.rawValue,
-                        "statusLabel": joinResult.name,
-                    ]
+                let startResult = meetingService.startMeeting(
+                    with: startMeetingParameters
                 )
-            )
+
+                result(
+                    makeActionResponse(
+                        action: action,
+                        isSuccess: startResult == .success,
+                        message: startResult == .success
+                            ? "MSG_JOIN_SENT_SUCCESS"
+                            : "MSG_JOIN_SENT_FAILED",
+                        params: [
+                            "statusCode": startResult.rawValue,
+                            "statusLabel": startResult.name,
+                        ]
+                    )
+                )
+            } else {
+                let joinMeetingParameters = MobileRTCMeetingJoinParam()
+
+                joinMeetingParameters.meetingNumber = args["meetingNumber"]
+                joinMeetingParameters.password = args["password"]
+                joinMeetingParameters.userName = args["displayName"]
+                joinMeetingParameters.webinarToken =
+                    (args["webinarToken"]?.isEmpty ?? true)
+                    ? nil : args["webinarToken"]
+                joinMeetingParameters.noVideo = false
+                joinMeetingParameters.noAudio = false
+
+                let joinResult = meetingService.joinMeeting(
+                    with: joinMeetingParameters
+                )
+
+                result(
+                    makeActionResponse(
+                        action: action,
+                        isSuccess: joinResult == .success,
+                        message: joinResult == .success
+                            ? "MSG_JOIN_SENT_SUCCESS"
+                            : "MSG_JOIN_SENT_FAILED",
+                        params: [
+                            "statusCode": joinResult.rawValue,
+                            "statusLabel": joinResult.name,
+                        ]
+                    )
+                )
+            }
 
         case "unInitZoom":
             if isInitialized == false {
