@@ -16,6 +16,7 @@ class ZoomService {
   String _userName = "";
   String _passCode = "";
   String? _webinarToken;
+  String? _zakToken;
   int _role = 0;
 
   StreamSubscription? _onAuthenticationReturn;
@@ -44,10 +45,24 @@ class ZoomService {
       password: _passCode,
       displayName: _userName,
       webinarToken: _webinarToken,
+      zakToken: _zakToken,
     );
 
     final result = await _zoomSdk.joinMeeting(request);
     print('EXAMPLE_APP::ACTION::JOIN - ${jsonEncode(result.toMap())}');
+    return result;
+  }
+
+  Future<FlutterZoomMeetingSdkActionResponse> startMeeting() async {
+    final request = ZoomMeetingSdkRequest(
+      meetingNumber: _meetingNumber,
+      password: _passCode,
+      displayName: _userName,
+      zakToken: _zakToken,
+    );
+
+    final result = await _zoomSdk.startMeeting(request);
+    print('EXAMPLE_APP::ACTION::START - ${jsonEncode(result.toMap())}');
     return result;
   }
 

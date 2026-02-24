@@ -179,6 +179,9 @@ public class FlutterZoomMeetingSdkPlugin: NSObject, FlutterPlugin {
             joinMeetingParameters.webinarToken =
                 (args["webinarToken"]?.isEmpty ?? true)
                 ? nil : args["webinarToken"]
+            joinMeetingParameters.zak =
+                (args["zakToken"]?.isEmpty ?? true)
+                ? nil : args["zakToken"]
             joinMeetingParameters.noVideo = false
             joinMeetingParameters.noAudio = false
 
@@ -196,6 +199,80 @@ public class FlutterZoomMeetingSdkPlugin: NSObject, FlutterPlugin {
                     params: [
                         "statusCode": joinResult.rawValue,
                         "statusLabel": joinResult.name,
+                    ]
+                )
+            )
+
+        case "startMeeting":
+            if isInitialized == false {
+                result(
+                    makeActionResponse(
+                        action: action,
+                        isSuccess: false,
+                        message: "MSG_NO_YET_INITIALIZED",
+                    )
+                )
+                return
+            }
+
+            guard let args = call.arguments as? [String: String] else {
+                result(
+                    makeActionResponse(
+                        action: action,
+                        isSuccess: false,
+                        message: "MSG_NO_ARGS_PROVIDED",
+                    )
+                )
+                return
+            }
+
+            guard let zakToken = args["zakToken"], !zakToken.isEmpty else {
+                result(
+                    makeActionResponse(
+                        action: action,
+                        isSuccess: false,
+                        message: "MSG_NO_ZAK_TOKEN_PROVIDED",
+                    )
+                )
+                return
+            }
+
+            guard let meetingService = MobileRTC.shared().getMeetingService()
+            else {
+                result(
+                    makeActionResponse(
+                        action: action,
+                        isSuccess: false,
+                        message: "MSG_MEETING_SERVICE_NOT_AVAILABLE",
+                    )
+                )
+                return
+            }
+
+            meetingService.delegate = self
+
+            let startMeetingParameters = MobileRTCMeetingStartParam4WithoutLogin()
+
+            startMeetingParameters.meetingNumber = args["meetingNumber"]
+            startMeetingParameters.userName = args["displayName"]
+            startMeetingParameters.zak = zakToken
+            startMeetingParameters.noVideo = false
+            startMeetingParameters.noAudio = false
+
+            let startResult = meetingService.startMeeting(
+                with: startMeetingParameters
+            )
+
+            result(
+                makeActionResponse(
+                    action: action,
+                    isSuccess: startResult == .success,
+                    message: startResult == .success
+                        ? "MSG_START_SENT_SUCCESS"
+                        : "MSG_START_SENT_FAILED",
+                    params: [
+                        "statusCode": startResult.rawValue,
+                        "statusLabel": startResult.name,
                     ]
                 )
             )
